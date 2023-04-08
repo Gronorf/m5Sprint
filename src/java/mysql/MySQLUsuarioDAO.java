@@ -18,10 +18,10 @@ import modelo.Usuario;
 public class MySQLUsuarioDAO implements UsuarioDAO {
 
     final String INSERT = "INSERT INTO usuarios(run, nombre, fechaNac) VALUES(? ,?, ?);";
-    final String UPDATE = "";
-    final String DELETE = "";
+    final String UPDATE = "UPDATE usuarios SET run = ?, nombre = ?, fechaNac = ?; WHERE id = ?";
+    final String DELETE = "DELETE * FROM usuarios WHERE id = ?;";
     final String GETALL = "SELECT * FROM usuarios;";
-    final String GETONE = "";
+    final String GETONE = "SELECT * FROM usuarios WHERE id = ?;";
 
     private Connection conn;
 
@@ -56,12 +56,50 @@ public class MySQLUsuarioDAO implements UsuarioDAO {
 
     @Override
     public void modificar(Usuario t) throws DAOException {
+        PreparedStatement st = null;
 
+        try {
+            st = conn.prepareStatement(UPDATE);
+            st.setLong(1, t.getRun());
+            st.setString(2, t.getNombreUsuario());
+            st.setDate(3, (Date) t.getFechaNacimiento());
+            st.setInt(4, t.getId());
+
+            if (st.executeUpdate() == 0) {
+                throw new DAOException("No se ha guardado el Registro.");
+            }
+
+        } catch (SQLException ex) {
+            throw new DAOException("Error en SQL", ex);
+        } finally {
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException ex) {
+                    throw new DAOException("Error en SQL", ex);
+                }
+            }
+        }
     }
 
     @Override
     public void eliminar(Usuario t) throws DAOException {
+        PreparedStatement st = null;
 
+        try {
+            st = conn.prepareStatement(DELETE);
+            st.setInt(1, t.getId());
+        } catch (SQLException ex) {
+            throw new DAOException("Error en SQL", ex);
+        } finally {
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException ex) {
+                    throw new DAOException("Error en SQL", ex);
+                }
+            }
+        }
     }
 
     private Usuario convertirObjeto(ResultSet rs) throws SQLException {

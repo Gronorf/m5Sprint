@@ -1,44 +1,43 @@
 package mysql;
 
-import java.sql.*;
-
-import java.util.List;
-import modelo.Cliente;
 import conexion.ConexionSingleton;
-import dao.ClienteDAO;
 import dao.DAOException;
+import dao.ProfesionalDAO;
+import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
+import modelo.Profesional;
 
-public class MySQLClienteDAO implements ClienteDAO {
+/**
+ *
+ * @author Leonel Briones Palacios
+ */
+public class MySQLProfesionalDAO implements ProfesionalDAO {
 
-    final String INSERT = "INSERT INTO Cliente(rutCliente, cliNombres, cliApellidos, cliTelefono, cliAfp, cliSistemaSalud, cliDireccion, cliComuna)VALUES(?, ?, ?, ?, ?, ?, ?, ?);";
-    final String UPDATE = "UPDATE Cliente SET rutCliente = ?, cliNombres = ?, cliApellidos = ?, cliTelefono = ?, cliAfp = ?, cliSistemaSalud = ?, cliDireccion = ?, cliComuna = ? WHERE idCliente;";
-    final String DELETE = "DELETE FROM Cliente WHERE rutCliente = ?;";
-    final String GETALL = "SELECT * FROM Cliente;";
-    final String GETONE = "SELECT * FROM Cliente WHERE rutCliente = ?";
+    final String INSERT = "INSERT INTO profesionales(rut, nombres, tituloProfesional, fechaIngreso) VALUES(?, ?, ?, ?);";
+    final String UPDATE = "UPDATE profesionales SET rut = ?, nombres = ?, tituloProfesional = ?, fechaIngreso = ? WHERE rut = ?;";
+    final String DELETE = "DELETE FROM profesionales WHERE rut = ?;";
+    final String GETALL = "SELECT * FROM profesionales;";
+    final String GETONE = "SELECT * FROM profesionales WHERE rut = ?;";
 
     private Connection conn;
 
-    public MySQLClienteDAO(Connection conn) {
+    public MySQLProfesionalDAO(Connection conn) {
         this.conn = ConexionSingleton.getConexion();
     }
 
     @Override
-    public void insertar(Cliente t) throws DAOException {
+    public void insertar(Profesional t) throws DAOException {
         //CREAR PREPAREDSTATEMENT
         PreparedStatement st = null;
 
         try {
             st = conn.prepareStatement(INSERT);
-            
-            st.setInt(1, t.getRut());
-            st.setString(2, t.getNombre());
-            st.setString(3, t.getApellido());
-            st.setString(4, t.getTelefono());
-            st.setString(5, t.getAfp());
-            st.setString(6, t.getSistemaSalud());
-            st.setString(7, t.getDireccion());
-            st.setString(8, t.getComuna());
+
+            st.setLong(1, t.getRun());
+            st.setString(2, t.getNombreUsuario());
+            st.setString(3, t.getTitulo());
+            st.setDate(4, (Date) t.getFechaIngreso());
 
             if (st.executeUpdate() == 0) {
                 throw new DAOException("No se ha guardado el Registro.");
@@ -57,26 +56,22 @@ public class MySQLClienteDAO implements ClienteDAO {
     }
 
     @Override
-    public void modificar(Cliente t) throws DAOException {
+    public void modificar(Profesional t) throws DAOException {
         PreparedStatement st = null;
 
         try {
             st = conn.prepareStatement(UPDATE);
-            st.setInt(1, t.getRut());
-            st.setString(2, t.getNombre());
-            st.setString(3, t.getApellido());
-            st.setString(4, t.getTelefono());
-            st.setString(5, t.getAfp());
-            st.setString(6, t.getSistemaSalud());
-            st.setString(7, t.getDireccion());
-            st.setString(8, t.getComuna());
-            st.setInt(9, t.getId());
+            st.setLong(1, t.getRun());
+            st.setString(2, t.getNombreUsuario());
+            st.setString(3, t.getTitulo());
+            st.setDate(4, (Date) t.getFechaIngreso());
+            st.setInt(5, (int) t.getRun());
 
             if (st.executeUpdate() == 0) {
                 throw new DAOException("No se ha guardado el Registro.");
             }
 
-        }catch (SQLException ex) {
+        } catch (SQLException ex) {
             throw new DAOException("Error en SQL", ex);
         } finally {
             if (st != null) {
@@ -90,13 +85,15 @@ public class MySQLClienteDAO implements ClienteDAO {
     }
 
     @Override
-    public void eliminar(Cliente t) throws DAOException {
+    public void eliminar(Profesional t) throws DAOException {
         PreparedStatement st = null;
-        
-        try{
+
+        try {
             st = conn.prepareStatement(DELETE);
-            st.setInt(1, t.getRut());
-        }catch (SQLException ex) {
+
+            st.setInt(1, (int) t.getRun());
+
+        } catch (SQLException ex) {
             throw new DAOException("Error en SQL", ex);
         } finally {
             if (st != null) {
@@ -109,43 +106,29 @@ public class MySQLClienteDAO implements ClienteDAO {
         }
     }
 
-    /**
-     * Método que permite crear un objeto Cliente recibiendo un ResultSet como
-     * parámetro
-     *
-     * @param rs
-     * @return
-     * @throws SQLException
-     */
-    private Cliente convertirObjeto(ResultSet rs) throws SQLException {
+    private Profesional convertirObjeto(ResultSet rs) throws SQLException {
 
-        Cliente cliente = new Cliente();
+        Profesional profesional = new Profesional();
 
-        cliente.setId(rs.getInt("idCliente"));
-        cliente.setRut(rs.getInt("rutCliente"));
-        cliente.setNombre(rs.getString("cliNombres"));
-        cliente.setApellido(rs.getString("cliApellidos"));
-        cliente.setTelefono(rs.getString("cliTelefono"));
-        cliente.setAfp(rs.getString("cliAfp"));
-        cliente.setSistemaSalud(rs.getString("cliSistemaSalud"));
-        cliente.setDireccion(rs.getString("cliDireccion"));
-        cliente.setComuna(rs.getString("cliComuna"));
+        profesional.setRun(rs.getLong("rut"));
+        profesional.setNombreUsuario(rs.getString("nombres"));
+        profesional.setFechaIngreso(rs.getDate("fechaIngreso"));
+        profesional.setTitulo(rs.getString("tituloProfesional"));
 
-        return cliente;
+        return profesional;
     }
 
     @Override
-    public List<Cliente> obtenerTodos() throws DAOException {
-
+    public List<Profesional> obtenerTodos() throws DAOException {
         PreparedStatement st = null;
         ResultSet rs = null;
-        List<Cliente> listaCliente = new ArrayList<>();
+        List<Profesional> listaProfesional = new ArrayList<>();
 
         try {
             st = conn.prepareStatement(GETALL);
             rs = st.executeQuery();
             while (rs.next()) {
-                listaCliente.add(convertirObjeto(rs));
+                listaProfesional.add(convertirObjeto(rs));
             }
 
         } catch (SQLException ex) {
@@ -166,20 +149,20 @@ public class MySQLClienteDAO implements ClienteDAO {
                 }
             }
         }
-        return listaCliente;
+        return listaProfesional;
     }
 
     @Override
-    public Cliente obtener(Integer id) throws DAOException {
+    public Profesional obtener(Integer id) throws DAOException {
         PreparedStatement st = null;
         ResultSet rs = null;
-        Cliente cliente = new Cliente();
+        Profesional profesional = new Profesional();
 
         try {
             st = conn.prepareStatement(GETONE);
             rs = st.executeQuery();
             while (rs.next()) {
-                cliente = convertirObjeto(rs);
+                profesional = convertirObjeto(rs);
             }
         } catch (SQLException ex) {
             throw new DAOException("Error en SQL", ex);
@@ -199,7 +182,7 @@ public class MySQLClienteDAO implements ClienteDAO {
                 }
             }
         }
-        return cliente;
+        return profesional;
     }
-
 }
+

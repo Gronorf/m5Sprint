@@ -187,6 +187,7 @@ CREATE TABLE administrativos(
     apellidos VARCHAR(45) NULL,
     email VARCHAR(25) NULL,
     area VARCHAR(25) NULL,
+    expPrevia VARCHAR(255),
     idUsuario INT NOT NULL /*FK usuario*/
 );
 
@@ -199,6 +200,7 @@ CREATE TABLE profesionales(
 	rut INT NOT NULL PRIMARY KEY,
     nombres VARCHAR(45) NULL,
     apellidos VARCHAR(45) NULL,
+    fechaIngreso DATE,
     telefono INT NULL,
     tituloProfesional VARCHAR(30) NULL,
     proyecto VARCHAR(45) NULL,

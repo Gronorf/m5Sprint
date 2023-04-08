@@ -10,6 +10,7 @@ import java.util.Date;
 public class Profesional extends Usuario{
     
     //ATRIBUTOS DE CLASE
+
     private String titulo;
     private Date fechaIngreso;
 

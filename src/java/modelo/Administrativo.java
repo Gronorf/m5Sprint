@@ -10,6 +10,7 @@ import java.util.Date;
 public class Administrativo extends Usuario{
     
     //ATRIBUTOS DE CLASE
+    private int id;
     private String area;
     private String experienciaPrevia;
 
