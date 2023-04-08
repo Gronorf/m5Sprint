@@ -53,13 +53,53 @@ public class MySQLCapacitacionDAO implements CapacitacionDAO{
     }
 
     @Override
-    public void modificar(Capacitacion c) {
+    public void modificar(Capacitacion c) throws DAOException {
+PreparedStatement st = null;
 
+        try {
+            st = conn.prepareStatement(UPDATE);
+            st.setDate(1, (Date) c.getFecha());
+            st.setString(2, c.getHora());
+            st.setString(3, c.getLugar());
+            st.setInt(4, c.getDuracion());
+            st.setInt(6, c.getRutCliente());
+            st.setInt(7, c.getId());
+
+            if (st.executeUpdate() == 0) {
+                throw new DAOException("No se ha guardado el Registro.");
+            }
+
+        }catch (SQLException ex) {
+            throw new DAOException("Error en SQL", ex);
+        } finally {
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException ex) {
+                    throw new DAOException("Error en SQL", ex);
+                }
+            }
+        }
     }
 
     @Override
-    public void eliminar(Capacitacion c) {
-
+    public void eliminar(Capacitacion c) throws DAOException{
+        PreparedStatement st = null;
+        
+        try{
+            st = conn.prepareStatement(DELETE);
+            st.setInt(1, c.getId());
+        }catch (SQLException ex) {
+            throw new DAOException("Error en SQL", ex);
+        } finally {
+            if (st != null) {
+                try {
+                    st.close();
+                } catch (SQLException ex) {
+                    throw new DAOException("Error en SQL", ex);
+                }
+            }
+        }
     }
 
     private Capacitacion convertirObjeto(ResultSet rs) throws SQLException{
